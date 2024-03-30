@@ -1,0 +1,99 @@
+name: test-wordpress-languages-github-action
+description: Check language files for WordPress plugins for being up-to-date
+inputs:
+  plugin_slug:
+    description: Plugin slug
+    required: true
+  working_directory:
+    description: Path to the plugin root
+    required: false
+    default: .
+  languages_directory:
+    description: Path to the languages directory
+    required: false
+    default: languages
+  ignored_pattern:
+    description: Pattern to ignore
+    required: false
+    default: '"POT-Creation-Date: '
+runs:
+  using: composite
+  steps:
+    - name: Check POT file
+      working-directory: '${{ inputs.working_directory }}'
+      shell: bash
+      run: |-
+        test -f "$LANG_FILE" \
+        || ( \
+          echo "::error file=$LANG_FILE::The POT file is missing" ; \
+          exit 1 \
+        )
+      env:
+        LANG_FILE: >-
+          ${{ inputs.languages_directory }}/${{ inputs.plugin_slug }}.pot
+    - uses: godaddy-wordpress/setup-wp-cli@1
+    - name: Build language files
+      working-directory: '${{ inputs.working_directory }}'
+      shell: bash
+      run: |-
+        wp i18n make-pot . "$LANG_FILE" --exclude=vendor
+        wp i18n update-po "$LANG_FILE"
+
+        git add --intent-to-add -- '${{ inputs.languages_directory }}'
+
+        if [[ ! $( \
+            git diff --exit-code -- '${{ inputs.languages_directory }}' \
+        ) ]] ; then
+          LINE_NUMBER="$( \
+            awk '/${{ inputs.ignored_pattern }}/ {print FNR}' "$LANG_FILE" \
+          )"
+          START_COLUMN="$(echo -n '${{ inputs.ignored_pattern }}' | wc -c)"
+          echo -n '::error '
+          echo -n "file=$LANG_FILE,"
+          echo -n "col=$START_COLUMN,"
+          echo -n "line=$LINE_NUMBER,"
+          echo -n 'title=The POT-Creation-Date header must be updated'
+          echo '::No changes'
+          exit 1
+        fi
+
+        git diff --stat -- '${{ inputs.languages_directory }}'
+      env:
+        LANG_FILE: >-
+          ${{ inputs.languages_directory }}/${{ inputs.plugin_slug }}.pot
+    - name: Install diff tool
+      id: diff_tool
+      shell: bash
+      run: |-
+        DIFFTOOL_DIR="$(mktemp --tmpdir='${{ runner.temp }}' -d)"
+        DIFFTOOL="$DIFFTOOL_DIR/difftool.sh"
+
+        cat <<EOF > "$DIFFTOOL"
+        #!/usr/bin/env bash
+
+        set -euo pipefail
+
+        diff --ignore-matching-lines='$IGNORED_PATTERN' "\$@"
+        EOF
+
+        chmod +x "$DIFFTOOL"
+        echo "$DIFFTOOL_DIR" >> "$GITHUB_PATH"
+        echo "path=$DIFFTOOL" >> "$GITHUB_OUTPUT"
+      env:
+        IGNORED_PATTERN: ${{ inputs.ignored_pattern }}
+    - name: Diff
+      working-directory: '${{ inputs.working_directory }}'
+      shell: bash
+      run: |-
+        test -z "$( \
+          git difftool \
+            --no-prompt \
+            --extcmd "${{ steps.diff_tool.outputs.path }}" \
+            -- '${{ inputs.languages_directory }}' \
+          || echo "Command failed" \
+        )" \
+          || git diff \
+            --exit-code \
+            --stat \
+            -- '${{ inputs.languages_directory }}' \
+          >&2
