@@ -1,2 +1,3 @@
-# test-languages-github-action
+# test-wordpress-languages-github-action
+
 Github action to test for language files being up-to-date
