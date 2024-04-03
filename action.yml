@@ -3,7 +3,7 @@ description: Check language files for WordPress plugins for being up-to-date.
 author: holyhope
 branding:
   icon: 'globe'
-  color: 'purple'
+  color: 'blue'
 inputs:
   plugin_slug:
     description: Plugin or theme slug.
