@@ -13,44 +13,46 @@ inputs:
     required: false
     default: '.'
   pot_file:
-    description: >-
+    description: |-
       Path to an existing POT file to use for updating.
 
-      If not provided, the default
-      `{source}/{plugin_slug}.pot` is used.
+      Default: `{source}/{plugin_slug}.pot`
     required: false
-    default: ''
   po_path:
     description: |-
-      PO file to update or a directory containing multiple PO files.
-      Defaults to all PO files in the source directory.
+      PO files to update or a directory containing multiple PO files.
+
+      Type: multi-line string
+
+      Default: all PO files in the source directory
+      with the same prefix as the POT file.
     required: false
-    default: ''
   languages_directory:
     description: Path to the languages directory
     required: false
     default: languages
-  ignored_pattern:
-    description: Pattern to ignore when checking the POT file changes.
+  ignored_patterns:
+    description: |-
+      Pattern to ignore when checking the POT file changes.
+
+      Type: multi-line string
     required: false
     default: '"POT-Creation-Date: '
   domain:
-    description: >-
+    description: |-
       Text domain to look for in the source code,
-      unless the `--ignore-domain` option is used.
+      unless the `ignore-domain` option is `true`.
 
-      By default, the "Text Domain" header of the plugin or theme is used.
-
-      If none is provided, it falls back to the project slug.
+      Default: the "Text Domain" header of the plugin or theme is used.
     required: false
   ignore_domain:
-    description: >-
+    description: |-
       Ignore the text domain completely and
       extract strings with any text domain.
     required: false
     default: false
   skip_js:
-    description: >-
+    description: |-
       Skips JavaScript string extraction.
       Useful when this is done in another build step, e.g. through Babel.
     required: false
@@ -72,38 +74,41 @@ inputs:
     required: false
     default: false
   skip_audit:
-    description: >-
+    description: |-
       Skips string audit where it tries
       to find possible mistakes in translatable strings.
     required: false
     default: true
   exclude:
-    description: >-
-      Comma-separated list of files and paths that
-      should be skipped for string extraction.
+    description: |-
+      List of files and paths that should be skipped for string extraction.
 
-      For example, `--exclude=.github,myfile.php` would ignore any strings
-      found within `myfile.php` or the `.github` folder. Simple glob patterns
-      can be used, i.e. `--exclude=foo-*.php` excludes any PHP file
-      with the `foo-` prefix. Leading and trailing slashes are ignored,
-      i.e. `/my/directory/` is the same as `my/directory`. The following files
+      Simple glob patterns can be used, i.e. `foo-*.php` excludes any PHP file
+      with the `foo-` prefix.
+      Leading and trailing slashes are ignored,
+      i.e. `/my/directory/` is the same as `my/directory`.
+      The following files
       and folders are always excluded:
       node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js.
+
+      Type: multi-line string
+      Default: None
     required: false
-    default: ''
   include:
     description: >-
-      Comma-separated list of files and paths that
+      List of files and paths that
       should be used for string extraction.
 
       If provided, only these files and folders
       will be taken into account for string extraction.
 
-      For example, `--include="src,my-file.php` will ignore anything
-      besides `my-file.php` and files in the `src` directory. Simple glob
-      patterns can be used, i.e. `--include=foo-*.php` includes any PHP file
-      with the `foo-` prefix. Leading and trailing slashes are ignored,
+      Simple glob patterns can be used, i.e. `foo-*.php` includes any PHP file
+      with the `foo-` prefix.
+      Leading and trailing slashes are ignored,
       i.e. `/my/directory/` is the same as `my/directory`.
+
+      Type: multi-line string
+      Default: None
     required: false
   location:
     description: >-
@@ -118,13 +123,11 @@ inputs:
       Array in JSON format of custom headers
       which will be added to the POT file.
     required: false
-    default: ''
   file_comment:
     description: >-
       String that should be added as a comment to the top of
       the resulting POT file.
     required: false
-    default: ''
   package_name:
     description: >-
       Name to use for package name in the resulting
@@ -132,22 +135,36 @@ inputs:
 
       Overrides plugin or theme name, if applicable.
     required: false
-    default: ''
+  fail_on_diff:
+    description: >-
+      Whether to fail the build if there are differences in the POT file.
+    required: false
+    default: true
+  fail_on_warning:
+    description: Whether to fail the build if there are warnings.
+    required: false
+    default: true
 outputs:
   patch_path:
     description: Path to the patch file.
     value: ${{ steps.diff.outputs.patch_path }}
+  warnings_path:
+    description: Path to the warnings file.
+    value: ${{ steps.build.outputs.warnings_path }}
 runs:
   using: composite
   steps:
     - name: Check POT file
       shell: bash
+      id: pot_file
       run: |-
         test -f "$LANG_FILE" \
         || ( \
           echo "::error file=$LANG_FILE::The POT file is missing" ; \
           exit 1 \
         )
+
+        echo "path=$LANG_FILE" >> "$GITHUB_OUTPUT"
       env:
         LANG_FILE: >-
           ${{ inputs.pot_file &&
@@ -158,17 +175,48 @@ runs:
               inputs.plugin_slug
             )
           }}
+    - name: Check PO files
+      id: po_files
+      shell: bash
+      run: >-
+        ${{ inputs.po_path &&
+          format( 'echo {0}', inputs.po_path ) ||
+          'find "$(dirname "${LANG_FILE}")" \
+            -mindepth 1 -maxdepth 1 \
+            -name "$(basename "${LANG_FILE%.pot}")-*.po"'
+        }} | while IFS= read -r PO_FILE; do
+          test -f "$PO_FILE" || (
+            echo "::error file=$PO_FILE::The PO file is missing" ;
+            exit 1
+          ) ;
+          PO_LANG="$(basename "$PO_FILE")"
+          PO_LANG="${PO_LANG#$(basename "${LANG_FILE%.pot}")-}"
+          PO_LANG="${PO_LANG%.po}"
+          echo "$PO_LANG=$PO_FILE" >> "$GITHUB_OUTPUT" ;
+        done
+      env:
+        LANG_FILE: ${{ steps.pot_file.outputs.path }}
+
     - uses: godaddy-wordpress/setup-wp-cli@1
 
     - name: Build POT file
+      id: build
       shell: bash
-      run: >-
-        wp i18n make-pot '${{ inputs.source }}' "$LANG_FILE" \
+      run: |-
+        WARNINGS="$(mktemp --tmpdir='${{ runner.temp }}' 'XXXXXX.log')"
+
+        wp i18n make-pot \
+          '${{ inputs.source }}' \
+          '${{ steps.pot_file.outputs.path }}' \
           '--slug=${{ inputs.plugin_slug }}' \
-          ${{ inputs.include &&
-            format( '--include={0}', inputs.include ) || '' }} \
-          ${{ inputs.exclude &&
-            format( '--exclude={0}', inputs.exclude ) || '' }} \
+          $(echo '${{ inputs.include }}' |
+            while IFS= read -r INCLUDE; do
+              test -z "$INCLUDE" || echo -n "--include=$INCLUDE "
+            done) \
+          $(echo '${{ inputs.exclude }}' |
+            while IFS= read -r EXCLUDE; do
+              test -z "$EXCLUDE" || echo -n "--exclude=$EXCLUDE "
+            done) \
           ${{ inputs.domain &&
             format( '--domain={0}', inputs.domain ) || '' }} \
           ${{ ! inputs.ignore_domain && '--ignore-domain' || '' }} \
@@ -178,74 +226,57 @@ runs:
           ${{ ! inputs.skip_blade && '--skip-blade' || '' }} \
           ${{ ! inputs.skip_block_json && '--skip-block-json' || '' }} \
           ${{ ! inputs.skip_theme_json && '--skip-theme-json' || '' }} \
-          '${{ inputs.location && '--location' || '--no-location' }}' \
+          ${{ inputs.location && '--location' || '--no-location' }} \
           ${{ inputs.headers &&
             format( '--headers={0}', inputs.headers ) || '' }} \
           ${{ inputs.file_comment &&
             format( '--file-comment={0}', inputs.file_comment ) || '' }} \
           ${{ inputs.package_name &&
-            format( '--package-name={0}', inputs.package_name ) }}
-      env:
-        LANG_FILE: >-
-          ${{ inputs.pot_file &&
-            inputs.pot_file ||
-            format(
-              '{0}/{1}.pot',
-              inputs.languages_directory,
-              inputs.plugin_slug
-            )
-          }}
+            format( '--package-name={0}', inputs.package_name ) }} \
+          2> "$WARNINGS"
+
+        echo "warnings_path=$WARNINGS" >> "$GITHUB_OUTPUT"
+        echo "warnings=$(wc -l "$WARNINGS" | cut -d ' ' -f 1)" \
+          >> "$GITHUB_OUTPUT"
 
     - name: Update PO files
       shell: bash
-      run: wp i18n update-po "$LANG_FILE"
-      env:
-        LANG_FILE: >-
-          ${{ inputs.pot_file &&
-            inputs.pot_file ||
-            format(
-              '{0}/{1}.pot',
-              inputs.languages_directory,
-              inputs.plugin_slug
-            )
-          }}
+      run: wp i18n update-po '${{ steps.pot_file.outputs.path }}'
 
     - name: Install diff tool
       id: diff_tool
       shell: bash
       run: |-
-        DIFFTOOL="$(mktemp --tmpdir='${{ runner.temp }}')"
+        DIFFTOOL="$(mktemp --tmpdir='${{ runner.temp }}' 'XXXXXX.patch')"
 
         cat <<EOF > "$DIFFTOOL"
         #!/usr/bin/env bash
 
         set -euo pipefail
 
-        diff --ignore-matching-lines='$IGNORED_PATTERN' "\$@"
+        diff $(echo '${{ inputs.ignored_patterns }}' | \
+          while IFS= read -r IGNORED_PATTERN; do
+            test -z "$IGNORED_PATTERN" \
+            || echo -n "--ignore-matching-lines='$IGNORED_PATTERN' "
+          done)"\$@"
         EOF
 
         chmod +x "$DIFFTOOL"
         echo "path=$DIFFTOOL" >> "$GITHUB_OUTPUT"
-      env:
-        IGNORED_PATTERN: ${{ inputs.ignored_pattern }}
 
     - name: Compute the diff
       id: diff
       shell: bash
       run: |-
-        git add --intent-to-add -- "$LANG_FILE" ${{ inputs.po_path }}
+        git add --intent-to-add -- \
+          '${{ steps.pot_file.outputs.path }}' \
+          ${{ join( steps.po_files.outputs.*, ' ') }}
 
         if [[ ! $( \
-            git diff --exit-code -- "$LANG_FILE" \
+            git diff --exit-code -- '${{ steps.pot_file.outputs.path }}' \
         ) ]] ; then
-          LINE_NUMBER="$( \
-            awk '/${{ inputs.ignored_pattern }}/ {print FNR}' "$LANG_FILE" \
-          )"
-          START_COLUMN="$(echo -n '${{ inputs.ignored_pattern }}' | wc -c)"
           echo -n '::error '
-          echo -n "file=$LANG_FILE,"
-          echo -n "col=$START_COLUMN,"
-          echo -n "line=$LINE_NUMBER,"
+          echo -n 'file=${{ steps.pot_file.outputs.path }},'
           echo -n 'title=The POT-Creation-Date header must be updated'
           echo '::No changes'
           exit 1
@@ -256,35 +287,101 @@ runs:
         git diff \
           --patch \
           --output="$PATCH_FILE" \
-          -- '${{ inputs.languages_directory }}'
+          -- \
+          '${{ steps.pot_file.outputs.path }}' \
+          ${{ join( steps.po_files.outputs.*, ' ') }}
 
         echo "patch_path=$PATCH_FILE" >> "$GITHUB_OUTPUT"
 
-        git diff --stat -- "$LANG_FILE"
-      env:
-        LANG_FILE: >-
-          ${{ inputs.pot_file &&
-            inputs.pot_file ||
-            format(
-              '{0}/{1}.pot',
-              inputs.languages_directory,
-              inputs.plugin_slug
-            )
-          }}
+    - name: Adds warnings to the summary
+      if: ${{ steps.build.outputs.warnings > 0 }}
+      shell: bash
+      run: >-
+        echo '# Warnings' >> "$GITHUB_STEP_SUMMARY" ;
+        echo '' >> "$GITHUB_STEP_SUMMARY" ;
+        echo '```' >> "$GITHUB_STEP_SUMMARY" ;
+        cat '${{ steps.build.outputs.warnings_path }}' \
+          >> "$GITHUB_STEP_SUMMARY" ;
+        echo '```' >> "$GITHUB_STEP_SUMMARY" ;
+        echo '' >> "$GITHUB_STEP_SUMMARY" ;
 
-    - name: Diff
+    - name: Adds diff to the summary
       shell: bash
       run: |-
-        test -z "$( \
-          git difftool \
-            --no-prompt \
-            --extcmd '${{ steps.diff_tool.outputs.path }}' \
-            -- '${{ inputs.languages_directory }}' \
-          || echo "Command failed" \
-        )" \
-          || ( \
-            echo '::group::Show diff' ; \
-            cat '${{ steps.diff.outputs.patch_path }}' ; \
-            echo '::endgroup::' ; \
-            exit 1 ; \
-          )
+        echo '# Changes' >> "$GITHUB_STEP_SUMMARY"
+        echo '' >> "$GITHUB_STEP_SUMMARY"
+
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        git diff --stat -- '${{ steps.pot_file.outputs.path }}' \
+          | head -n 1 \
+          >> "$GITHUB_STEP_SUMMARY"
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        echo '' >> "$GITHUB_STEP_SUMMARY"
+
+        cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+        | Language | File | Diff |
+        |----------|------|------|
+        EOF
+
+        PO_FILE_PREFIX="$(basename '${{ steps.pot_file.outputs.path }}')"
+        PO_FILE_PREFIX="${PO_FILE_PREFIX%.pot}-"
+        for PO_FILE in ${{ join( steps.po_files.outputs.*, ' ') }} ; do
+          PO_LANG="$(basename "$PO_FILE")"
+          PO_LANG="${PO_LANG#$PO_FILE_PREFIX}"
+          PO_LANG="${PO_LANG%.po}"
+
+          echo -n '| `'      >> "$GITHUB_STEP_SUMMARY"
+          echo -n "$PO_LANG" >> "$GITHUB_STEP_SUMMARY"
+          echo -n '` | `'    >> "$GITHUB_STEP_SUMMARY"
+          echo -n "$PO_FILE" >> "$GITHUB_STEP_SUMMARY"
+          echo -n '` | `'    >> "$GITHUB_STEP_SUMMARY"
+          (
+            git diff --exit-code --stat \
+              --stat-name-width=1 \
+              --stat-graph-width=50 \
+              -- "$PO_FILE" \
+            && echo '       0' \
+          ) | head -n 1 \
+            | tail -c +8 \
+            | head -c -1 \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo '` |' >> "$GITHUB_STEP_SUMMARY"
+        done
+        echo '' >> "$GITHUB_STEP_SUMMARY"
+
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        git diff --shortstat -- \
+          '${{ steps.pot_file.outputs.path }}' \
+          ${{ join( steps.po_files.outputs.*, ' ') }} \
+          >> "$GITHUB_STEP_SUMMARY"
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
+        echo '' >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Exit due to warnings
+      if: ${{ steps.build.outputs.warnings > 0 && inputs.fail_on_warning }}
+      shell: bash
+      run: >-
+        echo "::group::Show warnings: ${{
+          steps.build.outputs.warnings_path }}" ;
+        cat "${{ steps.build.outputs.warnings_path }}" ;
+        echo "::endgroup::" ;
+        exit 1
+
+    - name: Exit on due to diff
+      if: ${{ inputs.fail_on_diff }}
+      shell: bash
+      run: >-
+        git difftool \
+          --no-prompt \
+          --trust-exit-code \
+          --extcmd '${{ steps.diff_tool.outputs.path }}' \
+          -- \
+            '${{ steps.pot_file.outputs.path }}' \
+            ${{ join( steps.po_files.outputs.*, ' ') }} \
+        > /dev/null \
+        || ( \
+          echo '::group::Show diffs: ${{ steps.diff.outputs.patch_path }}' ; \
+          cat '${{ steps.diff.outputs.patch_path }}' ; \
+          echo '::endgroup::' ; \
+          exit 1
+        )
