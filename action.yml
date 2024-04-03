@@ -1,5 +1,9 @@
 name: Test WordPress language files
 description: Check language files for WordPress plugins for being up-to-date.
+author: holyhope
+branding:
+  icon: 'globe'
+  color: 'purple'
 inputs:
   plugin_slug:
     description: Plugin or theme slug.
