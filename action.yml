@@ -123,32 +123,6 @@ inputs:
     description: >-
       String that should be added as a comment to the top of
       the resulting POT file.
-
-      By default, a copyright comment is added for WordPress plugins
-      and themes in the following manner:
-
-
-      ```
-
-      Copyright (C) 2018 Example Plugin Author
-
-      This file is distributed under the same license as the
-      Example Plugin package.
-
-      ```
-
-
-      If a plugin or theme specifies a license in their
-      main plugin file or stylesheet, the comment looks like this:
-
-
-      ```
-
-      Copyright (C) 2018 Example Plugin Author
-
-      This file is distributed under the GPLv2.
-
-      ```
     required: false
     default: ''
   package_name:
