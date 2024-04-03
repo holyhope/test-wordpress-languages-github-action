@@ -1,0 +1,18 @@
+{
+  "owner": "holyhope",
+  "repo": "test-wordpress-languages-github-action",
+  "title_prefix": "GitHub Action: ",
+  "paths": {
+    "action": "action.yml",
+    "readme": "README.md"
+  },
+  "show_logo": true,
+  "branding_svg_path": ".github/branding.svg",
+  "versioning": {
+    "enabled": true,
+    "prefix": "v",
+    "override": "",
+    "branch": "main"
+  },
+  "pretty": true
+}
