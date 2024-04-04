@@ -53,7 +53,8 @@ Check language files for WordPress plugins for being up-to-date.
     #
     # Type: multi-line string
     #
-    # Default: all PO files in the source directory
+    # Default: all PO files in the source directory with the same prefix as the POT
+    # file.
     #
     po_path: ""
 
@@ -156,6 +157,16 @@ Check language files for WordPress plugins for being up-to-date.
     # `Project-Id-Version` header. Overrides plugin or theme name, if applicable.
     #
     package_name: ""
+
+    # Description: Whether to fail the build if there are differences in the POT file.
+    #
+    # Default: true
+    fail_on_diff: ""
+
+    # Description: Whether to fail the build if there are warnings.
+    #
+    # Default: true
+    fail_on_warning: ""
 ```
 
 <!-- end usage -->
@@ -183,13 +194,16 @@ Check language files for WordPress plugins for being up-to-date.
 | <b><code>headers</code></b>             | Array in JSON format of custom headers which will be added to the POT file.                                                                                                                                                                                                                                                                                                                                         |                                   | **false**           |
 | <b><code>file_comment</code></b>        | String that should be added as a comment to the top of the resulting POT file.                                                                                                                                                                                                                                                                                                                                      |                                   | **false**           |
 | <b><code>package_name</code></b>        | Name to use for package name in the resulting POT file's `Project-Id-Version` header.<br />Overrides plugin or theme name, if applicable.                                                                                                                                                                                                                                                                           |                                   | **false**           |
+| <b><code>fail_on_diff</code></b>        | Whether to fail the build if there are differences in the POT file.                                                                                                                                                                                                                                                                                                                                                 | <code>true</code>                 | **false**           |
+| <b><code>fail_on_warning</code></b>     | Whether to fail the build if there are warnings.                                                                                                                                                                                                                                                                                                                                                                    | <code>true</code>                 | **false**           |
 
 <!-- end inputs -->
 <!-- start outputs -->
 
-| **<b>Output</b>**              | **<b>Description</b>**  |
-| ------------------------------ | ----------------------- |
-| <b><code>patch_path</code></b> | Path to the patch file. |
+| **<b>Output</b>**                 | **<b>Description</b>**     |
+| --------------------------------- | -------------------------- |
+| <b><code>patch_path</code></b>    | Path to the patch file.    |
+| <b><code>warnings_path</code></b> | Path to the warnings file. |
 
 <!-- end outputs -->
 <!-- start [.github/ghadocs/examples/] -->
