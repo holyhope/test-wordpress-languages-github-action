@@ -19,6 +19,17 @@
 </div>
 <!-- start description -->
 <!-- end description -->
+
+This action checks the POT file for the WordPress plugin or theme by running `wp i18n make-pot` and then updates the PO files.
+See the [wp-cli doc](https://developer.wordpress.org/cli/commands/i18n/make-pot/) for more information.
+
+
+By default the action fails if the POT or PO files are not up-to-date or if there are warnings on compilation.
+This can be disabled with the `fail_on_diff` and `fail_on_warning` inputs.
+See the inputs below for more options.
+
+
+The action outputs a patch file with the changes to apply to the files, and a file containing all compiler warnings.
 <!-- start contents -->
 <!-- end contents -->
 <!-- start usage -->
