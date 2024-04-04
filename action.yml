@@ -1,9 +1,26 @@
 name: Test WordPress language files
-description: Check language files for WordPress plugins for being up-to-date.
+description: >-
+  Check language files for WordPress plugins for being up-to-date.
+
+
+  This action checks the POT file for the WordPress plugin or theme
+  by running `wp i18n make-pot` and then updates the PO files. See the
+  [wp-cli doc](https://developer.wordpress.org/cli/commands/i18n/make-pot/)
+  for more information.
+
+
+  By default the action fails if the POT or PO files are not up-to-date
+  or if there are warnings on compilation.
+  This can be disabled with the `fail_on_diff` and `fail_on_warning` inputs.
+  See the inputs below for more options.
+
+
+  The action outputs a patch file with the changes to apply to the files,
+  and a file containing all compiler warnings.
 author: holyhope
 branding:
-  icon: 'globe'
-  color: 'blue'
+  icon: globe
+  color: blue
 inputs:
   plugin_slug:
     description: Plugin or theme slug.
@@ -144,13 +161,15 @@ inputs:
     description: Whether to fail the build if there are warnings.
     required: false
     default: true
+
 outputs:
   patch_path:
-    description: Path to the patch file.
+    description: Path to the patch file containing the changes to apply.
     value: ${{ steps.diff.outputs.patch_path }}
   warnings_path:
-    description: Path to the warnings file.
+    description: Path to the file containing warnings.
     value: ${{ steps.build.outputs.warnings_path }}
+
 runs:
   using: composite
   steps:

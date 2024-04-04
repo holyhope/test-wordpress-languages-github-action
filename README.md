@@ -10,7 +10,7 @@
 <div align="center" width="100%">
 <!-- start branding -->
 
-<img src=".github/branding.svg" width="15%" align="center" alt="branding<icon:globe color:blue>" />
+<img src="doc/assets/branding.svg" width="15%" align="center" alt="branding<icon:globe color:blue>" />
 <!-- end branding -->
 <!-- start title -->
 
@@ -24,7 +24,7 @@
 </div>
 <!-- start description -->
 
-Check language files for WordPress plugins for being up-to-date.
+Check language files for WordPress plugins for being up-to-date.<br />This action checks the POT file for the WordPress plugin or theme by running `wp i18n make-pot` and then updates the PO files. See the [wp-cli doc](https://developer.wordpress.org/cli/commands/i18n/make-pot/) for more information.<br />By default the action fails if the POT or PO files are not up-to-date or if there are warnings on compilation. This can be disabled with the `fail_on_diff` and `fail_on_warning` inputs. See the inputs below for more options.<br />The action outputs a patch file with the changes to apply to the files, and a file containing all compiler warnings.
 
 <!-- end description -->
 <!-- start contents -->
@@ -32,7 +32,7 @@ Check language files for WordPress plugins for being up-to-date.
 <!-- start usage -->
 
 ```yaml
-- uses: holyhope/test-wordpress-languages-github-action@v0.0.0
+- uses: holyhope/test-wordpress-languages-github-action@main
   with:
     # Description: Plugin or theme slug.
     #
@@ -200,10 +200,10 @@ Check language files for WordPress plugins for being up-to-date.
 <!-- end inputs -->
 <!-- start outputs -->
 
-| **<b>Output</b>**                 | **<b>Description</b>**     |
-| --------------------------------- | -------------------------- |
-| <b><code>patch_path</code></b>    | Path to the patch file.    |
-| <b><code>warnings_path</code></b> | Path to the warnings file. |
+| **<b>Output</b>**                 | **<b>Description</b>**                                  |
+| --------------------------------- | ------------------------------------------------------- |
+| <b><code>patch_path</code></b>    | Path to the patch file containing the changes to apply. |
+| <b><code>warnings_path</code></b> | Path to the file containing warnings.                   |
 
 <!-- end outputs -->
 <!-- start [.github/ghadocs/examples/] -->
