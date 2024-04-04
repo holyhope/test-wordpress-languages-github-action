@@ -7,9 +7,9 @@
     "readme": "README.md"
   },
   "show_logo": true,
-  "branding_svg_path": ".github/branding.svg",
+  "branding_svg_path": "doc/assets/branding.svg",
   "versioning": {
-    "enabled": true,
+    "enabled": false,
     "prefix": "v",
     "override": "",
     "branch": "main"
