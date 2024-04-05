@@ -1,5 +1,6 @@
 name: Test WordPress language files
-description: Check language files for WordPress plugins for being up-to-date.
+description: >-
+  Check internationalization files for WordPress plugins for being up-to-date.
 author: holyhope
 branding:
   icon: globe

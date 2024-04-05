@@ -27,7 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cp -f README.md.tpl README.md
       - name: Install Node.js
         uses: actions/setup-node@v2
       - run: npx --yes github-action-readme-generator@v1.7.2
