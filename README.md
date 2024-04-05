@@ -173,6 +173,13 @@ The action outputs a patch file with the changes to apply to the files, and a fi
     #
     # Default: true
     fail_on_warning: ""
+
+    # Description: Path to the WP-CLI binary. To use a custom version of WP-CLI, see
+    # the
+    # [`install-wp-cli` GitHub action](https://github.com/marketplace/actions/install-wp-cli)
+    # Default: Downloaded from the official WP-CLI website.
+    #
+    wp_cli_path: ""
 ```
 
 <!-- end usage -->
@@ -205,6 +212,7 @@ The action outputs a patch file with the changes to apply to the files, and a fi
 | <b><code>package_name</code></b>        | Name to use for package name in the resulting POT file's `Project-Id-Version` header.<br />Overrides plugin or theme name, if applicable.                                                                                                                                                                                                                                                                           |                                   | **false**           |
 | <b><code>fail_on_diff</code></b>        | Whether to fail the build if there are differences in the POT file.                                                                                                                                                                                                                                                                                                                                                 | <code>true</code>                 | **false**           |
 | <b><code>fail_on_warning</code></b>     | Whether to fail the build if there are warnings.                                                                                                                                                                                                                                                                                                                                                                    | <code>true</code>                 | **false**           |
+| <b><code>wp_cli_path</code></b>         | Path to the WP-CLI binary.<br />To use a custom version of WP-CLI, see the [`install-wp-cli` GitHub action](https://github.com/marketplace/actions/install-wp-cli)<br />Default: Downloaded from the official WP-CLI website.                                                                                                                                                                                       |                                   | **false**           |
 
 <!-- end inputs -->
 <!-- start outputs -->
