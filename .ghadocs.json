@@ -8,8 +8,10 @@
   },
   "show_logo": true,
   "branding_svg_path": "doc/assets/branding.svg",
+  "branding_as_title_prefix": true,
   "versioning": {
     "enabled": false,
+    "badges": true,
     "prefix": "v",
     "override": "",
     "branch": "main"

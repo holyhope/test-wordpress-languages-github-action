@@ -1,44 +1,40 @@
 <!-- How to generate this file
-1. Reset the README.md file:
-   ```shell
-   cp -f README.md.tpl README.md
-   ```
-2. ```shell
-   npx --yes github-action-readme-generator@v1.6.0 --readme README.md
-   ```
+```shell
+npx --yes github-action-readme-generator@v1.7.2
+```
 -->
 <div align="center" width="100%">
-<!-- start branding -->
-
-<img src="doc/assets/branding.svg" width="15%" align="center" alt="branding<icon:globe color:blue>" />
-<!-- end branding -->
 <!-- start title -->
 
-# GitHub Action: Test WordPress language files
+# <img src="doc/assets/branding.svg" width="60px" align="center" alt="branding<icon:globe color:blue>" /> GitHub Action: Test WordPress language files
 
 <!-- end title -->
 <!-- start badges -->
 
-## <!-- end badges -->
+<a href="https://github.com/holyhope/test-wordpress-languages-github-action/releases/latest"><img src="https://img.shields.io/github/v/release/holyhope/test-wordpress-languages-github-action?display_name=tag&sort=semver&logo=github&style=flat-square" alt="Release" /></a><a href="https://github.com/holyhope/test-wordpress-languages-github-action/releases/latest"><img src="https://img.shields.io/github/release-date/holyhope/test-wordpress-languages-github-action?display_name=tag&sort=semver&logo=github&style=flat-square" alt="Release" /></a><img src="https://img.shields.io/github/last-commit/holyhope/test-wordpress-languages-github-action?logo=github&style=flat-square" alt="Commit" /><a href="https://github.com/holyhope/test-wordpress-languages-github-action/issues"><img src="https://img.shields.io/github/issues/holyhope/test-wordpress-languages-github-action?logo=github&style=flat-square" alt="Open Issues" /></a><img src="https://img.shields.io/github/downloads/holyhope/test-wordpress-languages-github-action/total?logo=github&style=flat-square" alt="Downloads" />
 
+<!-- end badges -->
 </div>
+
 <!-- start description -->
 
-Check language files for WordPress plugins for being up-to-date.
+Check internationalization files for WordPress plugins for being up-to-date.
 
 <!-- end description -->
 
-This action checks the POT file for the WordPress plugin or theme by running `wp i18n make-pot` and then updates the PO files.
-See the [wp-cli doc](https://developer.wordpress.org/cli/commands/i18n/make-pot/) for more information.
+<!-- start contents -->
+
+This action checks the [i18n files for the WordPress plugin or theme](https://codex.wordpress.org/I18n_for_WordPress_Developers) by running [`wp i18n make-pot`](https://developer.wordpress.org/cli/commands/i18n/make-pot/) and [`wp i18n update-po`](https://developer.wordpress.org/cli/commands/i18n/update-po/). This helps to ensure that the internationalization files are up-to-date and that the translations are not missing.
 
 By default the action fails if the POT or PO files are not up-to-date or if there are warnings on compilation.
-This can be disabled with the `fail_on_diff` and `fail_on_warning` inputs.
-See the inputs below for more options.
+This can be disabled with [the `fail_on_diff` and `fail_on_warning` inputs](#inputs).
 
 The action outputs a patch file with the changes to apply to the files, and a file containing all compiler warnings.
 
-<!-- start contents -->
 <!-- end contents -->
+
+## Usage
+
 <!-- start usage -->
 
 ```yaml
@@ -180,6 +176,9 @@ The action outputs a patch file with the changes to apply to the files, and a fi
 ```
 
 <!-- end usage -->
+
+## Inputs
+
 <!-- start inputs -->
 
 | **<b>Input</b>**                        | **<b>Description</b>**                                                                                                                                                                                                                                                                                                                                                                                              | **<b>Default</b>**                | **<b>Required</b>** |
@@ -216,5 +215,3 @@ The action outputs a patch file with the changes to apply to the files, and a fi
 | <b><code>warnings_path</code></b> | Path to the file containing warnings.                   |
 
 <!-- end outputs -->
-<!-- start [.github/ghadocs/examples/] -->
-<!-- end [.github/ghadocs/examples/] -->
