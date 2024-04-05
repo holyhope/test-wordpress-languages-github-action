@@ -42,7 +42,7 @@ The action outputs a patch file with the changes to apply to the files, and a fi
   with:
     # Description: Plugin or theme slug.
     #
-    plugin_slug: ""
+    slug: ""
 
     # Description: Directory to scan for string extraction.
     #
@@ -51,7 +51,7 @@ The action outputs a patch file with the changes to apply to the files, and a fi
 
     # Description: Path to an existing POT file to use for updating.
     #
-    # Default: `{source}/{plugin_slug}.pot`
+    # Default: `{source}/{slug}.pot`
     #
     pot_file: ""
 
@@ -183,7 +183,7 @@ The action outputs a patch file with the changes to apply to the files, and a fi
 
 | **<b>Input</b>**                        | **<b>Description</b>**                                                                                                                                                                                                                                                                                                                                                                                              | **<b>Default</b>**                | **<b>Required</b>** |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------- |
-| <b><code>plugin_slug</code></b>         | Plugin or theme slug.                                                                                                                                                                                                                                                                                                                                                                                               |                                   | **true**            |
+| <b><code>slug</code></b>                | Plugin or theme slug.                                                                                                                                                                                                                                                                                                                                                                                               |                                   | **true**            |
 | <b><code>source</code></b>              | Directory to scan for string extraction.                                                                                                                                                                                                                                                                                                                                                                            | <code>.</code>                    | **false**           |
 | <b><code>pot_file</code></b>            | Path to an existing POT file to use for updating.                                                                                                                                                                                                                                                                                                                                                                   |                                   | **false**           |
 | <b><code>po_path</code></b>             | PO files to update or a directory containing multiple PO files.                                                                                                                                                                                                                                                                                                                                                     |                                   | **false**           |
