@@ -6,7 +6,7 @@ branding:
   icon: globe
   color: blue
 inputs:
-  plugin_slug:
+  slug:
     description: Plugin or theme slug.
     required: true
   source:
@@ -17,7 +17,7 @@ inputs:
     description: |-
       Path to an existing POT file to use for updating.
 
-      Default: `{source}/{plugin_slug}.pot`
+      Default: `{source}/{slug}.pot`
     required: false
   po_path:
     description: |-
@@ -175,7 +175,7 @@ runs:
             format(
               '{0}/{1}.pot',
               inputs.languages_directory,
-              inputs.plugin_slug
+              inputs.slug
             )
           }}
     - name: Check PO files
@@ -211,7 +211,7 @@ runs:
         wp i18n make-pot \
           '${{ inputs.source }}' \
           '${{ steps.pot_file.outputs.path }}' \
-          '--slug=${{ inputs.plugin_slug }}' \
+          '--slug=${{ inputs.slug }}' \
           $(echo '${{ inputs.include }}' |
             while IFS= read -r INCLUDE; do
               test -z "$INCLUDE" || echo -n "--include=$INCLUDE "
