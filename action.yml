@@ -145,6 +145,15 @@ inputs:
     description: Whether to fail the build if there are warnings.
     required: false
     default: true
+  wp_cli_path:
+    description: >-
+      Path to the WP-CLI binary.
+
+      To use a custom version of WP-CLI, see the [`install-wp-cli`
+      GitHub action](https://github.com/marketplace/actions/install-wp-cli)
+
+      Default: Downloaded from the official WP-CLI website.
+    required: false
 
 outputs:
   patch_path:
@@ -200,7 +209,9 @@ runs:
       env:
         LANG_FILE: ${{ steps.pot_file.outputs.path }}
 
-    - uses: godaddy-wordpress/setup-wp-cli@1
+    - uses: holyhope/install-wp-cli-github-action@v1.0.0
+      id: wp_cli
+      if: ${{ ! inputs.wp_cli_path }}
 
     - name: Build POT file
       id: build
@@ -208,7 +219,10 @@ runs:
       run: |-
         WARNINGS="$(mktemp --tmpdir='${{ runner.temp }}' 'XXXXXX.log')"
 
-        wp i18n make-pot \
+        '${{ inputs.wp_cli_path
+          && inputs.wp_cli_path
+          || steps.wp_cli.outputs.path
+        }}' i18n make-pot \
           '${{ inputs.source }}' \
           '${{ steps.pot_file.outputs.path }}' \
           '--slug=${{ inputs.slug }}' \
@@ -244,7 +258,14 @@ runs:
 
     - name: Update PO files
       shell: bash
-      run: wp i18n update-po '${{ steps.pot_file.outputs.path }}'
+      run: >-
+        '${{ inputs.wp_cli_path
+          && inputs.wp_cli_path
+          || steps.wp_cli.outputs.path
+        }}' \
+          i18n \
+          update-po \
+          '${{ steps.pot_file.outputs.path }}'
 
     - name: Install diff tool
       id: diff_tool
@@ -273,7 +294,7 @@ runs:
       run: |-
         git add --intent-to-add -- \
           '${{ steps.pot_file.outputs.path }}' \
-          ${{ join( steps.po_files.outputs.*, ' ') }}
+          ${{ join( steps.po_files.outputs.*, ' ' ) }}
 
         if [[ ! $( \
             git diff --exit-code -- '${{ steps.pot_file.outputs.path }}' \
