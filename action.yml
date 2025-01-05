@@ -51,35 +51,35 @@ inputs:
       Ignore the text domain completely and
       extract strings with any text domain.
     required: false
-    default: false
+    default: 'false'
   skip_js:
     description: |-
       Skips JavaScript string extraction.
       Useful when this is done in another build step, e.g. through Babel.
     required: false
-    default: false
+    default: 'false'
   skip_php:
     description: Skips PHP string extraction.
     required: false
-    default: false
+    default: 'false'
   skip_blade:
     description: Skips Blade-PHP string extraction.
     required: false
-    default: false
+    default: 'false'
   skip_block_json:
     description: Skips string extraction from block.json files.
     required: false
-    default: false
+    default: 'false'
   skip_theme_json:
     description: Skips string extraction from theme.json files.
     required: false
-    default: false
+    default: 'false'
   skip_audit:
     description: |-
       Skips string audit where it tries
       to find possible mistakes in translatable strings.
     required: false
-    default: true
+    default: 'true'
   exclude:
     description: |-
       List of files and paths that should be skipped for string extraction.
@@ -118,7 +118,7 @@ inputs:
       Note that disabling this option makes it harder for technically
       skilled translators to understand each message’s context.
     required: false
-    default: true
+    default: 'true'
   headers:
     description: >-
       Array in JSON format of custom headers
@@ -140,11 +140,11 @@ inputs:
     description: >-
       Whether to fail the build if there are differences in the POT file.
     required: false
-    default: true
+    default: 'true'
   fail_on_warning:
     description: Whether to fail the build if there are warnings.
     required: false
-    default: true
+    default: 'true'
   wp_cli_path:
     description: >-
       Path to the WP-CLI binary.
