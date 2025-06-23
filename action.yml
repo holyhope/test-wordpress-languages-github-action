@@ -231,14 +231,8 @@ runs:
           '${{ inputs.source }}' \
           '${{ steps.pot_file.outputs.path }}' \
           '--slug=${{ inputs.slug }}' \
-          $(echo '${{ inputs.include }}' |
-            while IFS= read -r INCLUDE; do
-              test -z "$INCLUDE" || echo -n "--include=$INCLUDE "
-            done) \
-          $(echo '${{ inputs.exclude }}' |
-            while IFS= read -r EXCLUDE; do
-              test -z "$EXCLUDE" || echo -n "--exclude=$EXCLUDE "
-            done) \
+          $(test -z '${{ inputs.include }}' || echo "--include=$(echo '${{ inputs.include }}' | tr '\n' ',' | sed 's/,,*/,/' | sed 's/^,//' | sed 's/,$//' | sed 's/ *, */,/g')") \
+          $(test -z '${{ inputs.exclude }}' || echo "--exclude=$(echo '${{ inputs.exclude }}' | tr '\n' ',' | sed 's/,,*/,/' | sed 's/^,//' | sed 's/,$//' | sed 's/ *, */,/g')") \
           ${{ inputs.domain &&
             format( '--domain={0}', inputs.domain ) || '' }} \
           ${{ ! inputs.ignore_domain && '--ignore-domain' || '' }} \
