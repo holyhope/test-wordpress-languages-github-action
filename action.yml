@@ -231,8 +231,28 @@ runs:
           '${{ inputs.source }}' \
           '${{ steps.pot_file.outputs.path }}' \
           '--slug=${{ inputs.slug }}' \
-          $(test -z '${{ inputs.include }}' || echo "--include=$(echo '${{ inputs.include }}' | tr '\n' ',' | sed 's/,,*/,/' | sed 's/^,//' | sed 's/,$//' | sed 's/ *, */,/g')") \
-          $(test -z '${{ inputs.exclude }}' || echo "--exclude=$(echo '${{ inputs.exclude }}' | tr '\n' ',' | sed 's/,,*/,/' | sed 's/^,//' | sed 's/,$//' | sed 's/ *, */,/g')") \
+          $( \
+            test -z '${{ inputs.include }}' \
+            || echo "--include=$( \
+              echo '${{ inputs.include }}' \
+              | tr '\n' ',' \
+              | sed 's/,,*/,/' \
+              | sed 's/^,//' \
+              | sed 's/,$//' \
+              | sed 's/ *, */,/g'\
+            )" \
+          ) \
+          $( \
+            test -z '${{ inputs.exclude }}' \
+            || echo "--exclude=$( \
+              echo '${{ inputs.exclude }}' \
+              | tr '\n' ',' \
+              | sed 's/,,*/,/' \
+              | sed 's/^,//' \
+              | sed 's/,$//' \
+              | sed 's/ *, */,/g'\
+            )" \
+          ) \
           ${{ inputs.domain &&
             format( '--domain={0}', inputs.domain ) || '' }} \
           ${{ ! inputs.ignore_domain && '--ignore-domain' || '' }} \
